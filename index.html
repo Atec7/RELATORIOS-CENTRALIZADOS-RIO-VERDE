@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Business Intelligence - Relatórios</title>
+  <style>
+    :root {
+      --azul-escuro: #183239;
+      --laranja: #FF9600;
+      --laranja-suave: #C07100;
+      --branco: #ffffff;
+      --cinza-fundo: #f0f2f5;
+      --vidro: rgba(255, 255, 255, 0.25);
+      --borda: rgba(255, 255, 255, 0.18);
+      --texto-claro: #1e1e1e;
+      --texto-escuro: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --branco: #1a1a1a;
+      --cinza-fundo: #121212;
+      --texto-claro: #ffffff;
+      --vidro: rgba(255, 255, 255, 0.08);
+      --borda: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    h1{
+        text-align: center;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--cinza-fundo);
+      color: var(--texto-claro);
+      transition: all 0.3s ease-in-out;
+    }
+
+    header {
+      background-color: var(--azul-escuro);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .report-buttons, .actions {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    button {
+      background-color: var(--laranja);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: var(--laranja-suave);
+      transform: scale(1.05);
+    }
+
+    #login-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #login-box {
+      background: var(--vidro);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: 15px;
+      border: 1px solid var(--borda);
+      text-align: center;
+      width: 320px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    }
+
+    #login-box input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #login-box label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    #login-box button {
+      margin-top: 15px;
+      background-color: var(--laranja);
+    }
+
+    #error-msg {
+      color: red;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    #report-selection, #relatorio-container {
+      display: none;
+    }
+
+    .top-right {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .dark-toggle {
+    font-size: 26px;
+      background: transparent;
+      border: 2px solid white;
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      color: white;
+      transition: 0.3s;
+    }
+
+    .dark-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .loading {
+      text-align: center;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    .back-btn {
+      background-color: #444;
+    }
+
+    @media (max-width: 600px) {
+      iframe {
+        height: 400px;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <!-- Dark mode toggle -->
+  <div class="top-right">
+    <button class="dark-toggle" onclick="toggleDarkMode()">☀</button>
+  </div>
+
+  <!-- Login -->
+  <div id="login-overlay">
+    <div id="login-box">
+      <h2>🔐 Acesso Restrito</h2>
+      <p>Informe seu e-mail corporativo</p>
+      <input type="email" id="email" placeholder="seunome@grupopartnership.com.br">
+      <label><input type="checkbox" id="lembrar"> Lembrar e-mail</label>
+      <button onclick="validarEmail()">Entrar</button>
+      <div id="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- Cabeçalho -->
+  <header>
+    <h1>Setor de Informação e Performance</h1>
+    <p>Grupo Partnership - Rio Verde/GO</p>
+    <p><i>Por: Arnaldo S. Lima</i></p>
+    <p>em desenvolvimento...</p>
+  </header>
+
+  <!-- Seleção de relatórios -->
+  <div class="container" id="report-selection">
+    <h1>Relatórios Centralizados</h1>
+    <div class="report-buttons">
+      <button onclick="abrirRelatorio('geom')">📊 GEOM</button>
+      <button onclick="abrirRelatorio('perdas-interno')">📊 PERDAS INTERNO</button>
+      <button onclick="abrirRelatorio('perdas-externo')">📊 PERDAS EXTERNO (TOI)</button>
+      <button onclick="abrirRelatorio('stc-externos')">📊 STC EXTERNOS</button>
+    </div>
+  </div>
+
+  <!-- Relatório -->
+  <div class="container" id="relatorio-container">
+    <div id="loader" class="loading">⏳ Carregando relatório...</div>
+    <iframe id="relatorio" title="Relatório Power BI" src="" allowfullscreen="true" onload="document.getElementById('loader').style.display='none'"></iframe>
+
+    <div class="actions">
+      <button onclick="document.getElementById('relatorio').requestFullscreen()">🔍 Tela Cheia</button>
+      <button onclick="location.reload()">🔄 Atualizar</button>
+      <button onclick="compartilharWhatsApp()">📲 Compartilhar</button>
+      <button class="back-btn" onclick="voltar()">🔙 Voltar</button>
+    </div>
+  </div>
+
+  <script>
+    const links = {
+      geom: "https://app.powerbi.com/reportEmbed?reportId=84ec4bdc-e3df-447c-b2e7-c3f911891fcb&autoAuth=true&ctid=cefe151e-6a50-49bd-babe-57f86efc10eb&navContentPaneEnabled=false&filterPaneEnabled=false",
+            "perdas-interno": "https://app.powerbi.com/reportEmbed?reportId=9a334173-f8b8-4e3c-8bc7-4d715fe0043b&autoAuth=true&ctid=cefe151e-6a50-49bd-babe-57f86efc10eb&navContentPaneEnabled=false&filterPaneEnabled=false",
+      "perdas-externo": "https://app.powerbi.com/reportEmbed?reportId=d71266fa-7a39-4db1-aec9-f05781c624b8&autoAuth=true&ctid=cefe151e-6a50-49bd-babe-57f86efc10eb&navContentPaneEnabled=false&filterPaneEnabled=false",
+      "stc-externos": "https://app.powerbi.com/reportEmbed?reportId=be208a87-4669-4b5a-afa2-4aaa7514801c&autoAuth=true&ctid=cefe151e-6a50-49bd-babe-57f86efc10eb&navContentPaneEnabled=false&filterPaneEnabled=false"
+    };
+
+    // Ao carregar a página, verificar se há e-mail salvo
+    window.onload = function () {
+      const salvo = localStorage.getItem("emailSalvo");
+      if (salvo && salvo.endsWith("@grupopartnership.com.br")) {
+        document.getElementById("email").value = salvo;
+        document.getElementById("lembrar").checked = true;
+      }
+
+      // Detectar tema do sistema
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.setAttribute("data-theme", "dark");
+      }
+    };
+
+    function validarEmail() {
+      const email = document.getElementById('email').value.trim();
+      const permitido = "@grupopartnership.com.br";
+      if (email.endsWith(permitido)) {
+        if (document.getElementById("lembrar").checked) {
+          localStorage.setItem("emailSalvo", email);
+        } else {
+          localStorage.removeItem("emailSalvo");
+        }
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('report-selection').style.display = 'block';
+      } else {
+        document.getElementById('error-msg').innerText = "Apenas e-mails do domínio grupopartnership.com.br são permitidos.";
+      }
+    }
+
+    function abrirRelatorio(tipo) {
+      const link = links[tipo];
+      if (link) {
+        document.getElementById("relatorio").src = link;
+        document.getElementById("report-selection").style.display = "none";
+        document.getElementById("relatorio-container").style.display = "block";
+        document.getElementById("loader").style.display = "block";
+      }
+    }
+
+    function voltar() {
+      document.getElementById("relatorio").src = "";
+      document.getElementById("relatorio-container").style.display = "none";
+      document.getElementById("report-selection").style.display = "block";
+    }
+
+    function compartilharWhatsApp() {
+      const link = document.getElementById("relatorio").src;
+      const mensagem = encodeURIComponent("Confira este relatório Business Intelligence: " + link);
+      window.open("https://wa.me/?text=" + mensagem, "_blank");
+    }
+
+    function toggleDarkMode() {
+      const currentTheme = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
+    }
+  </script>
+</body>
+</html>
